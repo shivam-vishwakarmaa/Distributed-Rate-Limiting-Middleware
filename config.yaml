@@ -1,0 +1,22 @@
+redis:
+  addr: "localhost:6379"
+  dial_timeout_ms: 50
+  command_timeout_ms: 30
+
+circuit_breaker:
+  failure_threshold: 5
+  open_duration_seconds: 10
+
+routes:
+  - path_prefix: "/api/orders"
+    algorithm: "sliding_window_log"
+    limit: 100
+    window_seconds: 60
+  - path_prefix: "/api/search"
+    algorithm: "token_bucket"
+    capacity: 20
+    refill_per_second: 5
+  - path_prefix: "/"
+    algorithm: "fixed_window"
+    limit: 1000
+    window_seconds: 60
