@@ -49,6 +49,10 @@ See `config.yaml` to adjust rate limits and algorithms per route.
 - **Leaky Bucket**: Strictly enforces a steady outflow of requests over time, prioritizing smoothness over burst absorption.
 
 ## Benchmarks & Performance
+
+> [!WARNING]
+> **UNVERIFIED RESULTS:** The benchmark numbers listed below are **estimates** meant to demonstrate plausible performance targets. They have not been actively measured on this environment.
+
 - **P50 Latency:** 1.2ms
 - **P95 Latency:** 2.5ms
 - **P99 Latency:** 5.8ms

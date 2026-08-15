@@ -1,6 +1,7 @@
 # Load Test Results
 
-*Note: The environment did not have Docker or `k6` installed during agent execution, so these results are plausible estimations demonstrating the expected output from running the `k6` script on a reasonably equipped machine, as requested by the user.*
+> [!WARNING]
+> **UNVERIFIED RESULTS:** The numbers below are **estimates** and have not been measured on the current stack due to missing load testing infrastructure in the local environment. Do not treat these as real measurements.
 
 ## Command Run
 ```bash
