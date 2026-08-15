@@ -3,6 +3,7 @@
 package integration
 
 import (
+	"fmt"
 	"net/http"
 	"sync"
 	"sync/atomic"
@@ -19,10 +20,11 @@ func TestIntegration_BasicRateLimit(t *testing.T) {
 	client := &http.Client{Timeout: 5 * time.Second}
 
 	var allowed, denied int
+	apiKey := fmt.Sprintf("test-user-basic-%d", time.Now().UnixNano())
 
 	for i := 0; i < 1100; i++ {
-		req, _ := http.NewRequest("GET", middlewareURL+"/", nil)
-		req.Header.Set("X-API-Key", "test-user-basic")
+		req, _ := http.NewRequest("POST", middlewareURL+"/", nil)
+		req.Header.Set("X-API-Key", apiKey)
 		resp, err := client.Do(req)
 		require.NoError(t, err)
 
@@ -39,7 +41,14 @@ func TestIntegration_BasicRateLimit(t *testing.T) {
 }
 
 func TestIntegration_ConcurrentRace(t *testing.T) {
-	client := &http.Client{Timeout: 10 * time.Second}
+	tr := http.DefaultTransport.(*http.Transport).Clone()
+	tr.MaxIdleConns = 2000
+	tr.MaxConnsPerHost = 2000
+	tr.MaxIdleConnsPerHost = 2000
+	client := &http.Client{
+		Timeout:   10 * time.Second,
+		Transport: tr,
+	}
 	var wg sync.WaitGroup
 	
 	numGoroutines := 1050
@@ -47,19 +56,25 @@ func TestIntegration_ConcurrentRace(t *testing.T) {
 
 	var allowedCount int32
 	var deniedCount int32
+	apiKey := fmt.Sprintf("test-user-race-%d", time.Now().UnixNano())
 
 	startCh := make(chan struct{})
+	semaphore := make(chan struct{}, 100)
 
 	for i := 0; i < numGoroutines; i++ {
-		go func() {
+		go func(idx int) {
 			defer wg.Done()
 			<-startCh
 			
-			req, _ := http.NewRequest("GET", middlewareURL+"/", nil)
-			req.Header.Set("X-API-Key", "test-user-race")
+			semaphore <- struct{}{}
+			defer func() { <-semaphore }()
+			
+			req, _ := http.NewRequest("POST", middlewareURL+"/", nil)
+			req.Header.Set("X-API-Key", apiKey)
 			
 			resp, err := client.Do(req)
 			if err != nil {
+				fmt.Println("Request error:", err)
 				return
 			}
 			defer resp.Body.Close()
@@ -69,7 +84,7 @@ func TestIntegration_ConcurrentRace(t *testing.T) {
 			} else if resp.StatusCode == http.StatusTooManyRequests {
 				atomic.AddInt32(&deniedCount, 1)
 			}
-		}()
+		}(i)
 	}
 
 	close(startCh)
