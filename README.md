@@ -61,7 +61,4 @@ See `config.yaml` to adjust rate limits and algorithms per route.
 
 *Tested with k6 on local hardware. Reproduce via `k6 run loadtest/k6-script.js`.*
 
-## Resume Highlights
-- Engineered a distributed, high-throughput rate-limiting middleware in Go processing 12k+ requests/sec, maintaining p95 latency under 3ms.
-- Implemented four distinct rate limiting algorithms via atomic Redis Lua scripts, eliminating race conditions under massive concurrency.
-- Architected a highly resilient system with an automatic circuit breaker and local in-memory fallback, achieving sub-second failovers during Redis outages.
+
