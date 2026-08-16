@@ -41,6 +41,17 @@ jobs:
 
     - name: Start Server
       run: |
+        go build -o demo-backend ./demo/backend
+        ./demo-backend &
+        for i in {1..30}; do
+          if curl -s -f http://localhost:8081/ > /dev/null; then
+            echo "Backend is up!"
+            break
+          fi
+          echo "Waiting for backend..."
+          sleep 1
+        done
+
         go build -o server ./cmd/server
         ./server &
         for i in {1..30}; do
@@ -59,4 +70,6 @@ jobs:
 
     - name: Stop Server
       if: always()
-      run: pkill -f ./server || true
+      run: |
+        pkill -f ./server || true
+        pkill -f ./demo-backend || true

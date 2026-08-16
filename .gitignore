@@ -1,3 +1,8 @@
 project-1-rate-limiter-antigravity-prompt.md
 .idea/
 .vscode/
+*.exe
+.go_tool/
+go.zip
+miniredis_server.go
+
